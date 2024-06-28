@@ -15,6 +15,6 @@ export const columns: ColumnDef<CollectionType>[] = [
     },
     {
         id: "actions",
-        cell: ({ row }) => <Delete></Delete>,
+        cell: ({ row }) => <Delete id={row.original._id}></Delete>,
     },
 ];
