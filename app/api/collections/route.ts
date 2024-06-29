@@ -1,19 +1,22 @@
 import { connectToDB } from "@/lib/mongoDB";
-import { auth } from "@clerk/nextjs/server";
-import Collection from "@/lib/models/Collection";
+
 import { NextRequest, NextResponse } from "next/server";
+
+import Collection from "@/lib/models/Collection";
+import { auth } from "@clerk/nextjs/server";
 
 export const POST = async (req: NextRequest) => {
     try {
         const { userId } = auth();
 
         if (!userId) {
-            return new NextResponse("Unauthorized", { status: 401 });
+            return new NextResponse("Unauthorized", { status: 403 });
         }
 
         await connectToDB();
 
         const { title, description, image } = await req.json();
+
         const existingCollection = await Collection.findOne({ title });
 
         if (existingCollection) {
@@ -33,11 +36,13 @@ export const POST = async (req: NextRequest) => {
             description,
             image,
         });
+
         await newCollection.save();
+
         return NextResponse.json(newCollection, { status: 200 });
-    } catch (error) {
-        console.log("[collections_POST]", error);
-        return new NextResponse("Internal server error", { status: 500 });
+    } catch (err) {
+        console.log("[collections_POST]", err);
+        return new NextResponse("Internal Server Error", { status: 500 });
     }
 };
 
@@ -46,9 +51,10 @@ export const GET = async (req: NextRequest) => {
         await connectToDB();
 
         const collections = await Collection.find().sort({ createdAt: "desc" });
+
         return NextResponse.json(collections, { status: 200 });
-    } catch (error) {
-        console.log("[collections_GET]", error);
-        return new NextResponse("Internal server error", { status: 500 });
+    } catch (err) {
+        console.log("[collections_GET]", err);
+        return new NextResponse("Internal Server Error", { status: 500 });
     }
 };
